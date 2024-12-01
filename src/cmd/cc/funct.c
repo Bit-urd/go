@@ -269,8 +269,9 @@ dclfunct(Type *t, Sym *s)
 		goto bad;
 
 	f = alloc(sizeof(*f));
-	for(o=0; o<sizeof(f->sym); o++)
-		f->sym[o] = S;
+	size_t num_elements = sizeof(f->sym) / sizeof(f->sym[0]);
+	for(o = 0; o < num_elements; o++)
+	    f->sym[o] = S;
 
 	t->funct = f;
 
