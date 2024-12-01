@@ -4,7 +4,8 @@
 
 // Darwin and Linux use the same linkage to main
 
+// dlv list  入口函数 ,
 TEXT _rt0_amd64_linux(SB),7,$-8
-	MOVQ	$_rt0_amd64(SB), AX
+	MOVQ	$_rt0_amd64(SB), AX  // -> src/pkg/runtime/asm_amd64.s:8
 	MOVQ	SP, DI
 	JMP	AX
