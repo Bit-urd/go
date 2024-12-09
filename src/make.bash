@@ -82,6 +82,7 @@ done
 
 # Finally!  Run the build.
 
+#------------1、生成c bootstrap ---------------------
 echo '# Building C bootstrap tool.'
 echo cmd/dist
 export GOROOT="$(cd .. && pwd)"
@@ -97,7 +98,8 @@ gcc $mflag -O2 -Wall -Werror -ggdb -o cmd/dist/dist -Icmd/dist "$DEFGOROOT" cmd/
 
 eval $(./cmd/dist/dist env -p)
 echo
-
+#------------1、生成c bootstrap ---------------------
+#exit  
 if [ "$1" = "--dist-tool" ]; then
 	# Stop after building dist tool.
 	mkdir -p "$GOTOOLDIR"
@@ -109,6 +111,7 @@ if [ "$1" = "--dist-tool" ]; then
 fi
 
 #exit
+#------------2、生成go bootstrap编译器 ---------------------
 echo "# Building compilers and Go bootstrap tool for host, $GOHOSTOS/$GOHOSTARCH."
 buildall="-a"
 if [ "$1" = "--no-clean" ]; then
@@ -117,7 +120,9 @@ fi
 ./cmd/dist/dist bootstrap $buildall -v # builds go_bootstrap
 
 
-#exit
+#------------2、生成go bootstrap编译器 ---------------------
+
+
 # Delay move of dist tool to now, because bootstrap may clear tool directory.
 mv cmd/dist/dist "$GOTOOLDIR"/dist
 "$GOTOOLDIR"/go_bootstrap clean -i std
@@ -140,3 +145,4 @@ echo
 if [ "$1" != "--no-banner" ]; then
 	"$GOTOOLDIR"/dist banner
 fi
+
