@@ -26,7 +26,7 @@
 # CGO_ENABLED: Controls cgo usage during the build. Set it to 1
 # to include all cgo related files, .c and .go file with "cgo"
 # build directive, in the build. Set it to 0 to ignore them.
-
+set -x
 set -e
 if [ ! -f run.bash ]; then
 	echo 'make.bash must be run from $GOROOT/src' 1>&2
@@ -78,7 +78,7 @@ do
 done
 
 # Clean old generated file that will cause problems in the build.
-rm -f ./pkg/runtime/runtime_defs.go
+#rm -f ./pkg/runtime/runtime_defs.go
 
 # Finally!  Run the build.
 
@@ -108,16 +108,21 @@ if [ "$1" = "--dist-tool" ]; then
 	exit 0
 fi
 
+#exit
 echo "# Building compilers and Go bootstrap tool for host, $GOHOSTOS/$GOHOSTARCH."
 buildall="-a"
 if [ "$1" = "--no-clean" ]; then
 	buildall=""
 fi
 ./cmd/dist/dist bootstrap $buildall -v # builds go_bootstrap
+
+
+#exit
 # Delay move of dist tool to now, because bootstrap may clear tool directory.
 mv cmd/dist/dist "$GOTOOLDIR"/dist
 "$GOTOOLDIR"/go_bootstrap clean -i std
 echo
+
 
 if [ "$GOHOSTARCH" != "$GOARCH" -o "$GOHOSTOS" != "$GOOS" ]; then
 	echo "# Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH."
@@ -130,7 +135,7 @@ echo "# Building packages and commands for $GOOS/$GOARCH."
 "$GOTOOLDIR"/go_bootstrap install -gcflags "$GO_GCFLAGS" -ldflags "$GO_LDFLAGS" -v std
 echo
 
-rm -f "$GOTOOLDIR"/go_bootstrap
+# rm -f "$GOTOOLDIR"/go_bootstrap
 
 if [ "$1" != "--no-banner" ]; then
 	"$GOTOOLDIR"/dist banner
