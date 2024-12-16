@@ -6,8 +6,8 @@
 
 TEXT _rt0_amd64(SB),7,$-8
 	// copy arguments forward on an even stack
-	MOVQ	0(DI), AX		// argc
-	LEAQ	8(DI), BX		// argv
+	MOVQ	0(DI), AX		// argc  //命令行参数的数量 argc
+	LEAQ	8(DI), BX		// argv  // 命令行参数的指针 argv
 	SUBQ	$(4*8+7), SP		// 2args 2auto
 	ANDQ	$~15, SP
 	MOVQ	AX, 16(SP)
@@ -15,7 +15,7 @@ TEXT _rt0_amd64(SB),7,$-8
 	
 	// create istack out of the given (operating system) stack.
 	// initcgo may update stackguard.
-	MOVQ	$runtime·g0(SB), DI
+	MOVQ	$runtime·g0(SB), DI   // g0全局变量g0入DI寄存器, 变量在：src/pkg/runtime/proc.c:20    结构在：src/pkg/runtime/zruntime_defs_linux_amd64.go:56   dlv中使用vars可以看到 runtime.m0 = runtime.m {g0: *runtime.g  .... }
 	LEAQ	(-64*1024+104)(SP), BX
 	MOVQ	BX, g_stackguard(DI)
 	MOVQ	SP, g_stackbase(DI)

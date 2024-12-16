@@ -16,7 +16,7 @@ static void schedule(G*);
 
 typedef struct Sched Sched;
 
-M	runtime·m0;
+M	runtime·m0;  // src/pkg/runtime/zruntime_defs_linux_amd64.go:56 M的具体定义是 Go 层级的，编译器会将 Go 的 m 转换为对应的低级符号供使用。
 G	runtime·g0;	// idle goroutine for m0
 
 static	int32	debug	= 0;
