@@ -66,7 +66,7 @@ ok:
 	// create a new goroutine to start program
 	PUSHQ	$runtime·main(SB)		// entry
 	PUSHQ	$0			// arg size
-	CALL	runtime·newproc(SB)
+	CALL	runtime·newproc(SB) // main函数启动
 	POPQ	AX
 	POPQ	AX
 

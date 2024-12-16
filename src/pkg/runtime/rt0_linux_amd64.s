@@ -4,7 +4,7 @@
 
 // Darwin and Linux use the same linkage to main
 
-TEXT _rt0_amd64_linux(SB),7,$-8
-	MOVQ	$_rt0_amd64(SB), AX // 将_rt0_amd64地址移入ax寄存器
-	MOVQ	SP, DI  // 将栈压入di寄存器
+TEXT _rt0_amd64_linux(SB),7,$-8  // // dlv list  入口函数 ,
+	MOVQ	$_rt0_amd64(SB), AX  // -> src/pkg/runtime/asm_amd64.s:8
+	MOVQ	SP, DI
 	JMP	AX
