@@ -17,40 +17,40 @@ TEXT _rt0_amd64(SB),7,$-8
 	// initcgo may update stackguard.
 	MOVQ	$runtime·g0(SB), DI   // g0全局变量g0入DI寄存器, 变量在：src/pkg/runtime/proc.c:20    结构在：src/pkg/runtime/zruntime_defs_linux_amd64.go:56   dlv中使用vars可以看到 runtime.m0 = runtime.m {g0: *runtime.g  .... }
 	LEAQ	(-64*1024+104)(SP), BX
-	MOVQ	BX, g_stackguard(DI)
-	MOVQ	SP, g_stackbase(DI)
+	MOVQ	BX, g_stackguard(DI) // BX 赋值给 g_stackguard
+	MOVQ	SP, g_stackbase(DI)  // sp 赋值给 g_stackbase
 
 	// if there is an initcgo, call it.
-	MOVQ	initcgo(SB), AX
-	TESTQ	AX, AX
-	JZ	needtls
+	MOVQ	initcgo(SB), AX  // 将 initcgo 的地址加载到 AX 寄存器
+	TESTQ	AX, AX   //   // 检查 initcgo 是否为空
+	JZ	needtls        // 如果 initcgo 为 nil，则跳转到 needtls 标签
 	// g0 already in DI
 	MOVQ	DI, CX	// Win64 uses CX for first parameter
-	CALL	AX
-	CMPL	runtime·iswindows(SB), $0
-	JEQ ok
+	CALL	AX   // 调用 initcgo
+	CMPL	runtime·iswindows(SB), $0  // 检查操作系统是否为 Windows
+	JEQ ok    // 如果不是 Windows，跳转到 ok 标签， 是windows就先needtls 再ok
 
 needtls:
-	LEAQ	runtime·tls0(SB), DI
-	CALL	runtime·settls(SB)
+	LEAQ	runtime·tls0(SB), DI   // 将全局变量 runtime·tls0 的地址加载到 DI 寄存器中。
+	CALL	runtime·settls(SB)   // 通过将 runtime·tls0 传给 settls，Go 会确保 TLS 正确初始化，并与当前线程关联起来。
 
 	// store through it, to make sure it works
-	get_tls(BX)
-	MOVQ	$0x123, g(BX)
+	get_tls(BX)  // 获取当前线程的 TLS 基址，并存储到 BX 寄存器中。通过 TLS，可以访问与当前线程相关的数据，例如 Go 运行时中的 g 结构体（goroutine 信息）。
+	MOVQ	$0x123, g(BX)  // 将 0x123 写入通过 TLS 基址获取到的 g 结构体中。
 	MOVQ	runtime·tls0(SB), AX
 	CMPQ	AX, $0x123
-	JEQ 2(PC)
+	JEQ 2(PC)  // 如果比较结果相等（AX == 0x123），说明 TLS 存取正常，跳过接下来的异常处理代码。
 	MOVL	AX, 0	// abort
 ok:
-	// set the per-goroutine and per-mach "registers"
-	get_tls(BX)
+	// set the per-goroutine and per-mach "registers"  拿到当前线程的 g 和 m， 设置到特定寄存器里面
+	get_tls(BX)   // 		"#define	get_tls(r)	MOVL 8(GS), r\n"     用于获取线程局部存储（TLS） 的值，并将其存储到BX寄存器中 ， 宏定义在 src/cmd/dist/buildruntime.c 中
 	LEAQ	runtime·g0(SB), CX
-	MOVQ	CX, g(BX)
-	LEAQ	runtime·m0(SB), AX
+	MOVQ	CX, g(BX)   //  #define	g(r)	-8(r)
+	LEAQ	runtime·m0(SB), AX   // "#define	m(r)	-4(r)
 	MOVQ	AX, m(BX)
 
 	// save m->g0 = g0
-	MOVQ	CX, m_g0(AX)
+	MOVQ	CX, m_g0(AX)   // mov qword ptr [rax], rcx   反汇编后的 mov qword ptr [rax], rcx 可能表示了 rax 存储了经过计算后的 AX + m_g0 的值（即目标地址）。
 
 	CLD				// convention is D is always left cleared
 	CALL	runtime·check(SB)
@@ -59,19 +59,19 @@ ok:
 	MOVL	AX, 0(SP)
 	MOVQ	24(SP), AX		// copy argv
 	MOVQ	AX, 8(SP)
-	CALL	runtime·args(SB)
-	CALL	runtime·osinit(SB)
-	CALL	runtime·schedinit(SB)
+	CALL	runtime·args(SB)  // src/pkg/runtime/runtime.c:178
+	CALL	runtime·osinit(SB)  // src/pkg/runtime/thread_linux.c:174
+	CALL	runtime·schedinit(SB)  // src/pkg/runtime/proc.c:179
 
 	// create a new goroutine to start program
-	PUSHQ	$runtime·main(SB)		// entry
+	PUSHQ	$runtime·main(SB)		// entry  // src/pkg/runtime/proc.c:1224
 	PUSHQ	$0			// arg size
-	CALL	runtime·newproc(SB) // main函数启动
+	CALL	runtime·newproc(SB) // main函数启动   // src/pkg/runtime/proc.c:1231
 	POPQ	AX
 	POPQ	AX
 
 	// start this M
-	CALL	runtime·mstart(SB)
+	CALL	runtime·mstart(SB)   // src/pkg/runtime/proc.c:746
 
 	MOVL	$0xf1, 0xf1  // crash
 	RET

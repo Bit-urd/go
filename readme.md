@@ -243,3 +243,8 @@ runtime.g {
         gopc: 0,
         end: [0]uint64 [],}
 ```
+
+```bash
+https://hopehook.com/post/golang_assembly/
+https://guidao.github.io/asm.html
+```
