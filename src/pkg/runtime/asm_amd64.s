@@ -117,9 +117,9 @@ TEXT runtime·gogo(SB), 7, $0
 // void gogocall(Gobuf*, void (*fn)(void))
 // restore state from Gobuf but then call fn.
 // (call fn, returning to state in Gobuf)
-TEXT runtime·gogocall(SB), 7, $0
-	MOVQ	16(SP), AX		// fn
-	MOVQ	8(SP), BX		// gobuf
+TEXT runtime·gogocall(SB), 7, $0  // 保存当前 Goroutine 的上下文（包括栈指针、程序计数器等）。恢复目标 Goroutine 的上下文，准备执行目标函数。通过跳转指令（JMP）将控制权转交给目标 Goroutine。
+	MOVQ	16(SP), AX		// fn   从栈中取出参数 fn（目标函数的地址），并将其保存到寄存器 AX。
+	MOVQ	8(SP), BX		// gobuf  从栈中取出 gobuf（Goroutine 的上下文信息），并将其保存到寄存器 BX。
 	MOVQ	gobuf_g(BX), DX
 	get_tls(CX)
 	MOVQ	DX, g(CX)

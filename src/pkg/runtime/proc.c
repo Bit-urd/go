@@ -124,7 +124,7 @@ enum {
 #define atomic_waitstop(v)	(((v)>>waitstopShift)&1)
 #define atomic_gwaiting(v)	(((v)>>gwaitingShift)&1)
 
-Sched runtime·sched;
+Sched runtime·sched;  // src/pkg/runtime/proc.c:53
 int32 runtime·gomaxprocs;
 bool runtime·singleproc;
 
@@ -218,7 +218,7 @@ extern void main·main(void);
 
 // The main goroutine.
 void
-runtime·main(void)
+runtime·main(void)  //
 {
 	// Lock the main goroutine onto this, the main OS thread,
 	// during initialization.  Most programs won't care, but a few
@@ -566,12 +566,12 @@ top:
 	} else {
 		// Look for work on global queue.
 		while(haveg() && canaddmcpu()) {
-			gp = gget();
+			gp = gget();  // src/pkg/runtime/proc.c:419
 			if(gp == nil)
 				runtime·throw("gget inconsistency");
 
 			if(gp->lockedm) {
-				mnextg(gp->lockedm, gp);
+				mnextg(gp->lockedm, gp);  // src/pkg/runtime/proc.c:517
 				continue;
 			}
 			runtime·sched.grunning++;
@@ -628,16 +628,16 @@ top:
 	if(atomic_waitstop(v) && atomic_mcpu(v) <= atomic_mcpumax(v)) {
 		// set waitstop = 0 (known to be 1)
 		runtime·xadd(&runtime·sched.atomic, -1<<waitstopShift);
-		runtime·notewakeup(&runtime·sched.stopped);
+		runtime·notewakeup(&runtime·sched.stopped);  // src/pkg/runtime/lock_futex.c:112
 	}
 	schedunlock();
 
-	runtime·notesleep(&m->havenextg);
+	runtime·notesleep(&m->havenextg); // src/pkg/runtime/lock_futex.c:119 当前 m 进入休眠，等待新的Goroutine被分配
 	if(m->helpgc) {
-		runtime·gchelper();
-		m->helpgc = 0;
-		runtime·lock(&runtime·sched);
-		goto top;
+		runtime·gchelper();  // 如果 m 被标记为帮助进行垃圾回收（m->helpgc），则调用 runtime·gchelper() 进行垃圾回收操作。
+		m->helpgc = 0;  // 将标志 helpgc 重置，并重新锁定调度器，回到函数的开头重新执行。
+		runtime·lock(&runtime·sched);  //重新锁定调度器，回到函数的开头重新执行。
+		goto top;   // src/pkg/runtime/proc.c:539
 	}
 	if((gp = m->nextg) == nil)
 		runtime·throw("bad m->nextg in nextgoroutine");
@@ -759,7 +759,7 @@ runtime·mstart(void)
 	if(m == &runtime·m0)
 		runtime·initsig();
 
-	schedule(nil);
+	schedule(nil); // src/pkg/runtime/proc.c:838
 }
 
 // When running with cgo, we call libcgo_thread_start
@@ -893,7 +893,7 @@ schedule(G *gp)
 	}
 
 	// Find (or wait for) g to run.  Unlocks runtime·sched.
-	gp = nextgandunlock();
+	gp = nextgandunlock();  // src/pkg/runtime/proc.c:534
 	gp->readyonstop = 0;
 	gp->status = Grunning;
 	m->curg = gp;
@@ -905,7 +905,7 @@ schedule(G *gp)
 		runtime·resetcpuprofiler(hz);
 
 	if(gp->sched.pc == (byte*)runtime·goexit) {	// kickoff
-		runtime·gogocall(&gp->sched, (void(*)(void))gp->entry);
+		runtime·gogocall(&gp->sched, (void(*)(void))gp->entry); // src/pkg/runtime/asm_amd64.s:120
 	}
 	runtime·gogo(&gp->sched, 0);
 }

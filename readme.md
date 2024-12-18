@@ -248,3 +248,79 @@ runtime.g {
 https://hopehook.com/post/golang_assembly/
 https://guidao.github.io/asm.html
 ```
+
+
+
+```bash
+(dlv) l
+> [Breakpoint 1] C.runtime.gogocall() /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:120 (hits total:1) (PC: 0x416dd9)
+   115:         JMP     BX
+   116:
+   117: // void gogocall(Gobuf*, void (*fn)(void))
+   118: // restore state from Gobuf but then call fn.
+   119: // (call fn, returning to state in Gobuf)
+=> 120: TEXT runtime·gogocall(SB), 7, $0
+   121:         MOVQ    16(SP), AX              // fn
+   122:         MOVQ    8(SP), BX               // gobuf
+   123:         MOVQ    gobuf_g(BX), DX
+   124:         get_tls(CX)
+   125:         MOVQ    DX, g(CX)
+(dlv) stack
+0  0x0000000000416dd9 in C.runtime.gogocall
+   at /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:120
+1  0x000000000040ede0 in C.schedule
+   at /home/nch/workspace/go/src/pkg/runtime/proc.c:908
+2  0x000000000040eb05 in C.runtime.mstart
+   at /home/nch/workspace/go/src/pkg/runtime/proc.c:762
+3  0x0000000000416d86 in C._rt0_amd64
+   at /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:74
+4  0x0000000000000000 in ???
+   at :0
+   error: NULL address
+(truncated)
+
+
+
+(dlv) stack
+0  0x0000000000416df3 in C.runtime.gogocall
+   at /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:127
+1  0x000000000040ede0 in C.schedule
+   at /home/nch/workspace/go/src/pkg/runtime/proc.c:908
+2  0x000000000040eb05 in C.runtime.mstart
+   at /home/nch/workspace/go/src/pkg/runtime/proc.c:762
+3  0x0000000000416d86 in C._rt0_amd64
+   at /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:74
+4  0x0000000000000000 in ???
+   at :0
+   error: NULL address
+(truncated)
+(dlv) si
+> C.runtime.gogocall() /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:128 (PC: 0x416df6)
+        asm_amd64.s:122 0x416dde        488b5c2408              mov rbx, qword ptr [rsp+0x8]
+        asm_amd64.s:123 0x416de3        488b5310                mov rdx, qword ptr [rbx+0x10]
+        asm_amd64.s:125 0x416de7        6448891425f0ffffff      mov qword ptr fs:[0xfffffff0], rdx
+        asm_amd64.s:126 0x416df0        488b0a                  mov rcx, qword ptr [rdx]
+        asm_amd64.s:127 0x416df3        488b23                  mov rsp, qword ptr [rbx]
+=>      asm_amd64.s:128 0x416df6        488b5b08                mov rbx, qword ptr [rbx+0x8]
+        asm_amd64.s:129 0x416dfa        53                      push rbx
+        asm_amd64.s:130 0x416dfb        ffe0                    jmp rax
+(dlv) l
+> C.runtime.gogocall() /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:128 (PC: 0x416df6)
+   123:         MOVQ    gobuf_g(BX), DX
+   124:         get_tls(CX)
+   125:         MOVQ    DX, g(CX)
+   126:         MOVQ    0(DX), CX       // make sure g != nil
+   127:         MOVQ    gobuf_sp(BX), SP        // restore SP
+=> 128:         MOVQ    gobuf_pc(BX), BX
+   129:         PUSHQ   BX
+   130:         JMP     AX
+   131:         POPQ    BX      // not reached
+   132:
+   133: // void mcall(void (*fn)(G*))
+(dlv) stack
+0  0x0000000000416df6 in C.runtime.gogocall
+   at /home/nch/workspace/go/src/pkg/runtime/asm_amd64.s:128
+```
+
+
+
