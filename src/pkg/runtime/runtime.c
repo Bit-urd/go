@@ -194,7 +194,7 @@ runtime·goargs(void)
 	if(Windows)
 		return;
 
-	s = runtime·malloc(argc*sizeof s[0]);
+	s = runtime·malloc(argc*sizeof s[0]);  // src/pkg/runtime/malloc-biturd.c:102
 	for(i=0; i<argc; i++)
 		s[i] = runtime·gostringnocopy(argv[i]);
 	os·Args.array = (byte*)s;
@@ -211,9 +211,9 @@ runtime·goenvs_unix(void)
 	for(n=0; argv[argc+1+n] != 0; n++)
 		;
 
-	s = runtime·malloc(n*sizeof s[0]);
+	s = runtime·malloc(n*sizeof s[0]);  // src/pkg/runtime/malloc-biturd.c:102
 	for(i=0; i<n; i++)
-		s[i] = runtime·gostringnocopy(argv[argc+1+i]);
+		s[i] = runtime·gostringnocopy(argv[argc+1+i]);  // src/pkg/runtime/string-biturd.c:93
 	syscall·envs.array = (byte*)s;
 	syscall·envs.len = n;
 	syscall·envs.cap = n;

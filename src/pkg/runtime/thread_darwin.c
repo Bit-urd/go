@@ -74,7 +74,7 @@ runtime·osinit(void)
 void
 runtime·goenvs(void)
 {
-	runtime·goenvs_unix();
+	runtime·goenvs_unix();  // src/pkg/runtime/runtime.c:206
 }
 
 void

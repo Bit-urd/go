@@ -171,7 +171,7 @@ runtime·newosproc(M *m, G *g, void *stk, void (*fn)(void))
 void
 runtime·osinit(void)
 {
-	runtime·ncpu = getproccount();
+	runtime·ncpu = getproccount();  // src/pkg/runtime/thread_linux.c:84
 }
 
 void

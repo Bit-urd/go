@@ -350,7 +350,7 @@ runtime·stringtoslicerune(String s, Slice b)
 		n++;
 	}
 
-	b.array = runtime·mallocgc(n*sizeof(r[0]), FlagNoPointers, 1, 0);
+	b.array = runtime·mallocgc(n*sizeof(r[0]), FlagNoPointers, 1, 0);   // src/pkg/runtime/zmalloc_amd64.c:20
 	b.len = n;
 	b.cap = n;
 	p = s.str;

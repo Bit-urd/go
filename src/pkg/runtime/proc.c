@@ -185,8 +185,8 @@ runtime·schedinit(void)
 	runtime·mallocinit();
 	mcommoninit(m);
 
-	runtime·goargs();
-	runtime·goenvs();
+	runtime·goargs();  // src/pkg/runtime/runtime.c:188
+	runtime·goenvs();   // src/pkg/runtime/thread_darwin.c:75
 
 	// For debugging:
 	// Allocate internal symbol table representation now,
@@ -749,10 +749,10 @@ runtime·mstart(void)
 	// Record top of stack for use by mcall.
 	// Once we call schedule we're never coming back,
 	// so other calls can reuse this stack space.
-	runtime·gosave(&m->g0->sched);
+	runtime·gosave(&m->g0->sched);  // src/pkg/runtime/asm_amd64.s:93
 	m->g0->sched.pc = (void*)-1;  // make sure it is never used
 	runtime·asminit();
-	runtime·minit();
+	runtime·minit();  // src/pkg/runtime/thread_linux.c:188
 
 	// Install signal handlers; after minit so that minit can
 	// prepare the thread to be able to handle the signals.
@@ -924,7 +924,7 @@ runtime·gosched(void)
 		runtime·throw("gosched holding locks");
 	if(g == m->g0)
 		runtime·throw("gosched of g0");
-	runtime·mcall(schedule);
+	runtime·mcall(schedule);  // src/pkg/runtime/asm_amd64.s:137
 }
 
 // The goroutine g is about to enter a system call.
